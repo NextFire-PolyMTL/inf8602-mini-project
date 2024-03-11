@@ -1,3 +1,28 @@
+# inf8602-mini-project
+
+## Prerequisites
+
+- [Vagrant](https://developer.hashicorp.com/vagrant/install)
+- [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
+- [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#selecting-an-ansible-package-and-version-to-install)
+
+## Quickstart
+
+Bootstrap the VM and try the PoC:
+
+- [How to reproduce](#how-to-reproduce)
+
+Enable mitigations:
+
+```sh
+vagrant provision --provision-with ansible
+```
+
+## References
+
+- https://wiki.debian.org/SELinux/Setup#Steps_to_setup_SELinux
+- https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/using_selinux/index
+
 # CVE-2023-0386
 
 This folder contains a virtual machine and instructions to reproduce [CVE-2023-0386](https://nvd.nist.gov/vuln/detail/CVE-2023-0386), a vulnerability in the Linux kernel’s OverlayFS subsystem that allows an unprivileged user to escalate their privileges to root.

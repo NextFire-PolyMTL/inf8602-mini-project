@@ -1,0 +1,57 @@
+---
+- name: Setup mitigations
+  hosts: all
+  become: true
+  tasks:
+    - name: APT installs
+      ansible.builtin.apt:
+        update_cache: true
+        name:
+          - selinux-basics
+          - selinux-policy-default
+          - auditd
+
+    - name: Disable AppArmor
+      ansible.builtin.service:
+        name: apparmor
+        state: stopped
+        enabled: false
+
+    - name: Enable SELinux
+      ansible.builtin.command:
+        cmd: selinux-activate
+      changed_when: true
+
+    - name: Reboot
+      ansible.builtin.reboot:
+
+    - name: Check SELinux installation
+      ansible.builtin.command:
+        cmd: check-selinux-installation
+      changed_when: false
+
+    - name: Confine john
+      ansible.builtin.shell:
+        cmd: usermod -Z user_u john && restorecon -R -F -v /home/john
+      changed_when: true
+
+    - name: Copy policy
+      ansible.builtin.copy:
+        src: policy.te
+        dest: ~/policy.te
+        mode: preserve
+
+    - name: Build and install policy
+      ansible.builtin.shell:
+        cmd: make -f /usr/share/selinux/devel/Makefile && semodule -i policy.pp
+        chdir: ~/
+      changed_when: true
+
+    - name: Enforce SELinux
+      ansible.builtin.lineinfile:
+        path: /etc/selinux/config
+        regexp: "^SELINUX="
+        line: SELINUX=enforcing
+
+    - name: Reboot
+      ansible.builtin.reboot:
