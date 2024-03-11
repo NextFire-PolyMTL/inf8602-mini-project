@@ -13,4 +13,9 @@ Vagrant.configure("2") do |config|
   config.vm.provision "file", source: "Makefile", destination: "Makefile"
 
   config.vm.provision "shell", inline: "mv {poc.c,Makefile} /home/john && cd /home/john && make && chown john:john {poc*,Makefile}"
+
+  config.vm.provision "ansible" do |ansible|
+    ansible.playbook = "playbook.yaml"
+    ansible.raw_arguments = ["--diff"]
+  end
 end
