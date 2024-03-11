@@ -1,29 +1,41 @@
-Datadog Security Labs Research and Proof of Concept Code
-===
+# CVE-2023-0386
 
-This repository contains information, exploits, malware samples, and scripts from Datadog Security Labs.
+This folder contains a virtual machine and instructions to reproduce [CVE-2023-0386](https://nvd.nist.gov/vuln/detail/CVE-2023-0386), a vulnerability in the Linux kernel’s OverlayFS subsystem that allows an unprivileged user to escalate their privileges to root.
 
+## How to reproduce
 
-## Goal
+* Start the virtual machine (based on Ubuntu 22.04.1, kernel 5.15.0-57-generic):
 
-This repository aims at providing proof of concept exploits, malware samples and technical demos to help the community respond to threats. Code from this repository might be used to:
+```
+vagrant up
+```
 
-* Improve Detections
-* Continue additional research on Tactics, Techniques and Procedures (TTPs)
-* Discover additional exploits
+* SSH to the machine as an unprivileged user:
 
-## Proofs of Concept
+```
+vagrant ssh --command "sudo su john -c 'cd; bash'"
+```
 
-- [Dirty Pipe Container Breakout](./proof-of-concept-exploits/dirtypipe-container-breakout/)
-- [Exploitation and Sample Vulnerable Application of the JWT Null Signature Vulnerability (CVE-2022-21449)](./proof-of-concept-exploits/jwt-null-signature-vulnerable-app)
-- [Spring Core RCE aka Spring4shell (CVE-2022-22965)](./proof-of-concept-exploits/spring4shell)
-- [Confluence CVE-2022-26134 OGNL Vulnerability](./proof-of-concept-exploits/confluence-cve-2022-26134)
-- [OpenSSL punycode Vulnerability (CVE-2022-3602)](./proof-of-concept-exploits/openssl-punycode-vulnerability)
-- [OverlayFS privilege escalation vulnerability CVE-2023-0386](./proof-of-concept-exploits/overlayfs-cve-2023-0386/)
-- [Confluence CVE-2023-22515 vulnerability](./proof-of-concept-exploits/confluence-cve-2023-22515/)
+```bash
+john@ubuntu-jammy:~$ id
+uid=1002(john) gid=1002(john) groups=1002(john)
+```
 
-## Stay Tuned!
+* Exploit
 
-We'll create a new GitHub release for every new proof of concept in this repository. To make sure you don't miss it, watch new releases!
+The virtual machine is provisioned with an exploit merging the different pieces of this [proof of concept repository](https://github.com/xkaneiki/CVE-2023-0386/) into one single static binary. This binary creates folders tree under `/tmp/ovlcap` and starts FUSE filesystem which serves an suid executable. It then calls `unshare` with mount overlay command and copy of the lower suid executable. Finally, it runs the suid executable to spawn a root shell.
 
-![image](https://user-images.githubusercontent.com/136675/165481082-5032369b-50dc-4d4a-b6de-8a8a2527fb04.png)
+Run the following command to exploit the vulnerability and escalate to root:
+
+```
+./poc
+```
+
+<p align="center">
+   <img src="screenshot.png" width="650" />
+</p>
+
+## Credits
+
+Proof-of-concept: https://github.com/xkaneiki/CVE-2023-0386/
+Reproduction for Datadog: Ryan Simon and Fred Baguelin
