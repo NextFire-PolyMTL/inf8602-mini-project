@@ -30,6 +30,30 @@
         cmd: check-selinux-installation
       changed_when: false
 
+    - name: Create vagrant SSH keypair
+      become: true
+      become_user: vagrant
+      ansible.builtin.command:
+        cmd: ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519
+        creates: ~/.ssh/id_ed25519
+
+    - name: Create .ssh directory for john
+      become: true
+      become_user: john
+      ansible.builtin.file:
+        path: ~/.ssh
+        state: directory
+        mode: "0700"
+
+    - name: Allow vagrant to ssh into john
+      ansible.builtin.copy:
+        src: /home/vagrant/.ssh/id_ed25519.pub
+        remote_src: true
+        dest: /home/john/.ssh/authorized_keys
+        owner: john
+        group: john
+        mode: "0600"
+
     - name: Confine john
       ansible.builtin.shell:
         cmd: usermod -Z user_u john && restorecon -R -F -v /home/john

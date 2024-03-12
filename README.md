@@ -16,6 +16,7 @@ Enable mitigations:
 
 ```sh
 vagrant provision --provision-with ansible
+vagrant ssh -c 'ssh john@localhost'
 ```
 
 ## References
