@@ -22,10 +22,13 @@
     - name: Flush handlers
       ansible.builtin.meta: flush_handlers
 
-    - name: Set systemd-networkd to permissive
+    - name: Set system components to permissive
       community.general.selinux_permissive:
-        name: systemd_networkd_t
+        name: "{{ item }}"
         permissive: true
+      with_items:
+        - systemd_networkd_t
+        - systemd_resolved_t
 
     - name: Create vagrant SSH keypair
       become: true
@@ -49,12 +52,12 @@
     - name: Copy policy source
       ansible.builtin.copy:
         src: policy.te
-        dest: ~/policy.te
+        dest: /root/policy.te
         mode: preserve
 
     - name: Build policy
       community.general.make:
-        chdir: ~/
+        chdir: /root
         target: policy.pp
         file: /usr/share/selinux/devel/Makefile
       notify:
@@ -95,5 +98,5 @@
 
     - name: Install policy
       ansible.builtin.command:
-        cmd: semodule -i ~/policy.pp
+        cmd: semodule -i /root/policy.pp
       changed_when: true
