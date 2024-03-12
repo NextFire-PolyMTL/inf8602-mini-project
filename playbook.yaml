@@ -43,11 +43,11 @@
         creates: ~/.ssh/id_ed25519
 
     - name: Create .ssh directory for john
-      become: true
-      become_user: john
       ansible.builtin.file:
-        path: ~/.ssh
+        path: /home/john/.ssh
         state: directory
+        owner: john
+        group: john
         mode: "0700"
 
     - name: Allow vagrant to ssh into john
@@ -59,9 +59,9 @@
         group: john
         mode: "0600"
 
-    - name: Confine john
+    - name: Map john to user_u
       ansible.builtin.shell:
-        cmd: usermod -Z user_u john && restorecon -R -F -v /home/john
+        cmd: semanage login -a -s user_u john && restorecon -RF /home/john
       changed_when: true
 
     - name: Copy policy

@@ -23,6 +23,7 @@ vagrant ssh -c 'ssh john@localhost'
 
 - https://wiki.debian.org/SELinux/Setup#Steps_to_setup_SELinux
 - https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/8/html/using_selinux/index
+- https://wiki.gentoo.org/wiki/SELinux
 
 # CVE-2023-0386
 
