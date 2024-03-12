@@ -30,6 +30,11 @@
         cmd: check-selinux-installation
       changed_when: false
 
+    - name: Set systemd-networkd to permissive
+      ansible.builtin.command:
+        cmd: semanage permissive -a systemd_networkd_t
+      changed_when: true
+
     - name: Create vagrant SSH keypair
       become: true
       become_user: vagrant

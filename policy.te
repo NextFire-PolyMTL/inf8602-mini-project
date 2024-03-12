@@ -1,21 +1,11 @@
 module policy 1.0;
 
 require {
-	type init_runtime_t;
 	type sshd_t;
-	type systemd_networkd_t;
 	type unconfined_t;
-	class dir { read };
-	class file { getattr open read };
-	class process { transition };
+	class process transition;
 }
 
 # Allow unconfined_u users (vagrant) to ssh
 #============= sshd_t ==============
-#!!!! This avc can be allowed using the boolean 'ssh_sysadm_login'
 allow sshd_t unconfined_t:process transition;
-
-# Fix for systemd-networkd
-#============= systemd_networkd_t ==============
-allow systemd_networkd_t init_runtime_t:dir read;
-allow systemd_networkd_t init_runtime_t:file { getattr open read };
