@@ -10,17 +10,75 @@
           - selinux-basics
           - selinux-policy-default
           - auditd
+      notify:
+        - Enable SELinux
 
     - name: Disable AppArmor
-      ansible.builtin.service:
+      ansible.builtin.systemd_service:
         name: apparmor
         state: stopped
-        enabled: false
+        masked: true
 
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
+
+    - name: Set systemd-networkd to permissive
+      community.general.selinux_permissive:
+        name: systemd_networkd_t
+        permissive: true
+
+    - name: Create vagrant SSH keypair
+      become: true
+      become_user: vagrant
+      community.crypto.openssh_keypair:
+        path: /home/vagrant/.ssh/id_rsa
+      register: vagrant_keypair
+
+    - name: Allow vagrant to ssh into john
+      ansible.posix.authorized_key:
+        user: john
+        key: "{{ vagrant_keypair.public_key }}"
+
+    - name: Map john to user_u
+      community.general.selogin:
+        login: john
+        seuser: user_u
+      notify:
+        - Relabel john home directory
+
+    - name: Copy policy source
+      ansible.builtin.copy:
+        src: policy.te
+        dest: ~/policy.te
+        mode: preserve
+
+    - name: Build policy
+      community.general.make:
+        chdir: ~/
+        target: policy.pp
+        file: /usr/share/selinux/devel/Makefile
+      notify:
+        - Install policy
+
+    - name: Flush handlers
+      ansible.builtin.meta: flush_handlers
+
+    - name: Enforce SELinux
+      ansible.builtin.lineinfile:
+        path: /etc/selinux/config
+        regexp: "^SELINUX="
+        line: SELINUX=enforcing
+      notify:
+        - Reboot
+
+  handlers:
     - name: Enable SELinux
       ansible.builtin.command:
         cmd: selinux-activate
       changed_when: true
+      notify:
+        - Reboot
+        - Check SELinux installation
 
     - name: Reboot
       ansible.builtin.reboot:
@@ -30,67 +88,12 @@
         cmd: check-selinux-installation
       changed_when: false
 
-    - name: Set systemd-networkd to permissive
-      ansible.builtin.command:
-        cmd: semanage permissive -a systemd_networkd_t
-      changed_when: true
-
-    - name: Create vagrant SSH keypair
-      become: true
-      become_user: vagrant
-      ansible.builtin.command:
-        cmd: ssh-keygen -t ed25519 -N "" -f ~/.ssh/id_ed25519
-        creates: ~/.ssh/id_ed25519
-
-    - name: Create .ssh directory for john
-      ansible.builtin.file:
-        path: /home/john/.ssh
-        state: directory
-        owner: john
-        group: john
-        mode: "0700"
-
-    - name: Allow vagrant to ssh into john
-      ansible.builtin.copy:
-        src: /home/vagrant/.ssh/id_ed25519.pub
-        remote_src: true
-        dest: /home/john/.ssh/authorized_keys
-        owner: john
-        group: john
-        mode: "0600"
-
-    - name: Map john to user_u
-      ansible.builtin.command:
-        cmd: semanage login -a -s user_u john
-      changed_when: true
-
     - name: Relabel john home directory
       ansible.builtin.command:
         cmd: restorecon -RF /home/john
-      changed_when: true
-
-    - name: Copy policy source
-      ansible.builtin.copy:
-        src: policy.te
-        dest: ~/policy.te
-        mode: preserve
-
-    - name: Build policy
-      ansible.builtin.command:
-        cmd: make -f /usr/share/selinux/devel/Makefile
-        chdir: ~/
       changed_when: true
 
     - name: Install policy
       ansible.builtin.command:
         cmd: semodule -i ~/policy.pp
       changed_when: true
-
-    - name: Enforce SELinux
-      ansible.builtin.lineinfile:
-        path: /etc/selinux/config
-        regexp: "^SELINUX="
-        line: SELINUX=enforcing
-
-    - name: Reboot
-      ansible.builtin.reboot:

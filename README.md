@@ -12,7 +12,7 @@ Bootstrap the VM and try the PoC:
 
 - [How to reproduce](#how-to-reproduce)
 
-Enable mitigations:
+Enable or update mitigations:
 
 ```sh
 vagrant provision --provision-with ansible
