@@ -27,6 +27,7 @@
         name: "{{ item }}"
         permissive: true
       with_items:
+        - system_dbusd_t
         - systemd_networkd_t
         - systemd_resolved_t
 
@@ -67,10 +68,9 @@
       ansible.builtin.meta: flush_handlers
 
     - name: Enforce SELinux
-      ansible.builtin.lineinfile:
-        path: /etc/selinux/config
-        regexp: "^SELINUX="
-        line: SELINUX=enforcing
+      ansible.posix.selinux:
+        state: enforcing
+        policy: default
       notify:
         - Reboot
 
