@@ -3,7 +3,7 @@
   hosts: all
   become: true
   tasks:
-    - name: APT installs
+    - name: Install packages
       ansible.builtin.apt:
         update_cache: true
         name:
@@ -60,20 +60,30 @@
         mode: "0600"
 
     - name: Map john to user_u
-      ansible.builtin.shell:
-        cmd: semanage login -a -s user_u john && restorecon -RF /home/john
+      ansible.builtin.command:
+        cmd: semanage login -a -s user_u john
       changed_when: true
 
-    - name: Copy policy
+    - name: Relabel john home directory
+      ansible.builtin.command:
+        cmd: restorecon -RF /home/john
+      changed_when: true
+
+    - name: Copy policy source
       ansible.builtin.copy:
         src: policy.te
         dest: ~/policy.te
         mode: preserve
 
-    - name: Build and install policy
-      ansible.builtin.shell:
-        cmd: make -f /usr/share/selinux/devel/Makefile && semodule -i policy.pp
+    - name: Build policy
+      ansible.builtin.command:
+        cmd: make -f /usr/share/selinux/devel/Makefile
         chdir: ~/
+      changed_when: true
+
+    - name: Install policy
+      ansible.builtin.command:
+        cmd: semodule -i ~/policy.pp
       changed_when: true
 
     - name: Enforce SELinux
