@@ -1,3 +1,6 @@
+# Adapted from:
+# https://github.com/eduarrrd/reuseport/blob/7df587d04f56a8fbef0370184a2eedc83266b806/reuse/meson.build
+
 project('lsm_bpf', 'c')
 
 libbpf = dependency('libbpf')

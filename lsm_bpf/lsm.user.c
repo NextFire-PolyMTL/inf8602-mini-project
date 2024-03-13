@@ -1,3 +1,10 @@
+/*
+ * User-space program that loads and attaches the BPF program to the LSM hook.
+ *
+ * Adapted from:
+ * https://blog.cloudflare.com/live-patch-security-vulnerabilities-with-ebpf-lsm (deny_unshare.c)
+ */
+
 #include <bpf/libbpf.h>
 #include <unistd.h>
 #include "lsm_bpf.skel.h"
