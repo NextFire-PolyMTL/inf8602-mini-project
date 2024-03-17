@@ -30,4 +30,4 @@ lsm_bpf_skel = custom_target(
   output: 'lsm_bpf.skel.h',
 )
 
-executable( 'lsm_bpf', ['lsm.user.c', lsm_bpf_skel], dependencies: libbpf, install: true)
+executable('lsm_bpf', ['lsm.user.c', lsm_bpf_skel], dependencies: libbpf, install: true)

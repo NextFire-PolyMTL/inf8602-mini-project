@@ -30,13 +30,10 @@
     - name: Install bpftool
       ansible.builtin.unarchive:
         src: https://github.com/libbpf/bpftool/releases/download/v7.3.0/bpftool-v7.3.0-amd64.tar.gz
-        dest: /usr/local/bin
         remote_src: true
-
-    - name: Set bpftool executable
-      ansible.builtin.file:
-        path: /usr/local/bin/bpftool
+        dest: /usr/local/bin
         mode: "0755"
+        creates: /usr/local/bin/bpftool
 
     - name: Install meson
       ansible.builtin.pip:
@@ -49,8 +46,7 @@
         src: lsm_bpf/
         dest: /usr/src/lsm_bpf
         mode: "0755"
-      notify:
-        - Recompile lsm_bpf
+      notify: Recompile lsm_bpf
 
   handlers:
     - name: Update GRUB
