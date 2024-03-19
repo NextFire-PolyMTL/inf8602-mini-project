@@ -4,26 +4,33 @@
 
 - [Vagrant](https://developer.hashicorp.com/vagrant/install)
 - [VirtualBox](https://www.virtualbox.org/wiki/Downloads)
-- [Ansible](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html#selecting-an-ansible-package-and-version-to-install)
 
 ## Quickstart
 
-Bootstrap the VM and try the PoC:
-
-- [How to reproduce](#how-to-reproduce)
-
-Enable LSM BPF hooks:
+Launch the virtual machine:
 
 ```sh
-# Inside the VM
-sudo lsm_bpf
+vagrant up
 ```
 
-Recompile `lsm_bpf` after modifying the source code:
+Try the proof of concept:
 
 ```sh
-# On the host
-vagrant provision --provision-with ansible
+vagrant ssh
+cd /vagrant/
+make
+sudo su john
+./poc
+```
+
+Enable [lsm_bpf](lsm_bpf/) mitigation:
+
+```sh
+vagrant ssh
+cd /vagrant/lsm_bpf/
+meson setup build
+meson compile -C build/
+sudo ./build/lsm_bpf
 ```
 
 # CVE-2023-0386

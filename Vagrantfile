@@ -4,18 +4,5 @@ Vagrant.configure("2") do |config|
   config.vm.box_download_checksum = "f37c8dbda2d712ffb6242b7b9d88058298caf3a860ae29620de1cd4d02b59a9a"
   config.vm.box_download_checksum_type = "sha256"
 
-  # Disable the default synced folder
-  config.vm.synced_folder '.', '/vagrant', disabled: true
-
-  config.vm.provision "shell", path: "provision.sh"
-
-  config.vm.provision "file", source: "poc.c", destination: "poc.c"
-  config.vm.provision "file", source: "Makefile", destination: "Makefile"
-
-  config.vm.provision "shell", inline: "mv {poc.c,Makefile} /home/john && cd /home/john && make && chown john:john {poc*,Makefile}"
-
-  config.vm.provision "ansible" do |ansible|
-    ansible.playbook = "playbook.yaml"
-    ansible.raw_arguments = ["--diff"]
-  end
+  config.vm.provision "shell", path: "provision.sh", reboot: true
 end
